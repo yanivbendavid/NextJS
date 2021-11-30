@@ -22,11 +22,27 @@ export default function HomePage(props) {
   return <MeetupList meetups={props.meetups} />;
 }
 
+/*
+export async function getServerSideProps(context) {
+  const { req, res } = context;
+
+  return {
+    props: {
+      meetups: meetupsList,
+    },
+  };
+}
+*/
+
+// this function can only be used on page (not on component)
+//credentials can also be filled here (server side function)
 export async function getStaticProps() {
   return {
     props: {
       meetups: meetupsList,
     },
-    revalidate: 10, // if there are new requests, data will be pooled evert 10 secs
+    revalidate: 30,
+    // if there are new requests, data will be pooled evert x secs.
+    //this is optional and if not specified that it will be cached only after each build
   };
 }
