@@ -16,11 +16,26 @@ export async function getStaticProps() {
   const list = await collection.find().toArray();
   client.close();
 
-  const meetups = list.map((l) => {
-    const o = Object.assign(l, { id: l._id.toString() });
-    delete o._id;
-    return o;
-  });
+  // const meetups = list.map((l) => {
+  //   const o = Object.assign(l, { id: l._id.toString() });
+  //   delete o._id;
+  //   return o;
+  // });
+
+  // const meetups = list.map((l) =>
+  //   Object.assign(l, { id: l._id.toString(), _id: "" })
+  // );
+
+  const meetups = list.map((l) =>
+    Object.assign(
+      { id: l._id.toString() },
+      Object.fromEntries(
+        Object.keys(l)
+          .filter((key) => key !== "_id")
+          .map((key) => [key, l[key]])
+      )
+    )
+  );
 
   return {
     props: {
