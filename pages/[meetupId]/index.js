@@ -1,62 +1,43 @@
-import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { MongoClient, ObjectId } from "mongodb";
 import MeetupDetail from "../../components/meetups/MeetupDetail";
 
-const meetupsList = [
-  {
-    id: 1,
-    image: "https://i.ytimg.com/vi/sXHtKlMxY5c/maxresdefault.jpg",
-    title: "Eifel Tower",
-    address: "France",
-    description: "A new meetup below the tower",
-  },
-  {
-    id: 2,
-    image:
-      "https://i.insider.com/5d38ca7d36e03c5dfa2ed4e3?width=1000&format=jpeg&auto=webp",
-    title: "Pisa Tower",
-    address: "Italy",
-    description: "Meetup at pisa",
-  },
-];
-
 export default function DetailsPage(props) {
-  // const router = useRouter();
-  // const {
-  //   query: { meetupId },
-  // } = router;
-
-  // const meetupDetail = meetupId
-  //   ? meetupsList.find((m) => m.id === parseInt(router.query.meetupId))
-  //   : {};
-
-  return <MeetupDetail meetup={props.meetupDetail} />;
+  return <MeetupDetail meetup={props.meetup} />;
 }
 
 export async function getStaticPaths() {
+  const client = await MongoClient.connect(
+    "mongodb+srv://yaniv:yaniv1981@reactdemoproject.sge8j.mongodb.net/meetups?retryWrites=true&w=majority"
+  );
+  const db = await client.db();
+  const collection = db.collection("meetup");
+  const ids = await collection.find({}, { projection: { _id: 1 } }).toArray();
+  client.close();
+
   return {
     fallback: false, //false=all paths are described. true- server will try to generate the rest dynamically
-    paths: [
-      {
-        params: {
-          meetupId: "1",
-        },
+    paths: ids.map((id) => ({
+      params: {
+        meetupId: id._id.toString(),
       },
-      {
-        params: {
-          meetupId: "2",
-        },
-      },
-    ],
+    })),
   };
 }
 
 export async function getStaticProps(context) {
+  const client = await MongoClient.connect(
+    "mongodb+srv://yaniv:yaniv1981@reactdemoproject.sge8j.mongodb.net/meetups?retryWrites=true&w=majority"
+  );
+  const db = await client.db();
+  const collection = db.collection("meetup");
+  const meetup = await collection.findOne({
+    _id: ObjectId(context.params.meetupId),
+  });
+  client.close();
+  meetup.id = meetup._id.toString();
+  delete meetup._id;
+
   return {
-    props: {
-      meetupDetail: meetupsList.find(
-        (m) => m.id === parseInt(context.params.meetupId)
-      ),
-    },
+    props: { meetup },
   };
 }
