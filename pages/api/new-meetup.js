@@ -1,5 +1,7 @@
 import { MongoClient } from "mongodb";
 
+/*
+//simpler approach
 export default async function handler(req, res) {
   if (req.method === "POST") {
     try {
@@ -9,31 +11,38 @@ export default async function handler(req, res) {
       const db = client.db();
       const meetupsCollection = db.collection("meetup");
       const result = await meetupsCollection.insertOne(req.body);
+      // res.status(201).json({ message: "meetup inserted" });
+      return result.acknowledged
+        ? res.status(201).json({ message: "meetup inserted" })
+        : res.status(400).json({ message: "bad request" });
       client.close();
-      res.status(201).json({ message: "meetup inserted" });
     } catch (error) {
-      console.log(error);
+      console.error(error.message);
+      client.close();
     }
   }
 }
+*/
 
-/*
-export default function handler(req, res) {
+export default async function (req, res) {
   return new Promise((resolve, reject) => {
     if (req.method === "POST") {
-      try {
-        MongoClient.connect(
-          "mongodb+srv://yaniv:yaniv1981@reactdemoproject.sge8j.mongodb.net/meetups?retryWrites=true&w=majority"
+      MongoClient.connect(
+        "mongodb+srv://yaniv:yaniv1981@reactdemoproject.sge8j.mongodb.net/meetups?retryWrites=true&w=majority"
+      )
+        .then((client) =>
+          client
+            .db()
+            .collection("meetup")
+            .insertOne(req.body)
+            .then(() =>
+              resolve(res.status(201).json({ message: "meetup inserted" }))
+            )
         )
-          .then((db) => db.collection("meetup"))
-          .then((result) => result.insertOne(req.body));
-        client.close();
-        resolve();
-      } catch (error) {
-        console.log(error);
-        reject("error connecting");
-      }
+        .catch((err) => {
+          console.error(err.message);
+          reject("error connecting");
+        });
     }
   });
 }
-*/

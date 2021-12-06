@@ -1,8 +1,17 @@
 import { MongoClient } from "mongodb";
+import Head from "next/head";
 import MeetupList from "../components/meetups/MeetupList";
 
 export default function HomePage(props) {
-  return <MeetupList meetups={props.meetups} />;
+  return (
+    <>
+      <Head>
+        <title>React Meetups - your meetup source</title>
+        <meta name="description" content="Amazing meetups all around the world" />
+      </Head>
+      <MeetupList meetups={props.meetups} />
+    </>
+  );
 }
 
 // this function can only be used on page (not on component)
@@ -16,11 +25,26 @@ export async function getStaticProps() {
   const list = await collection.find().toArray();
   client.close();
 
-  const meetups = list.map((l) => {
-    const o = Object.assign(l, { id: l._id.toString() });
-    delete o._id;
-    return o;
-  });
+  // const meetups = list.map((l) => {
+  //   const o = Object.assign(l, { id: l._id.toString() });
+  //   delete o._id;
+  //   return o;
+  // });
+
+  // const meetups = list.map((l) =>
+  //   Object.assign(l, { id: l._id.toString(), _id: "" })
+  // );
+
+  const meetups = list.map((l) =>
+    Object.assign(
+      { id: l._id.toString() },
+      Object.fromEntries(
+        Object.keys(l)
+          .filter((key) => key !== "_id")
+          .map((key) => [key, l[key]])
+      )
+    )
+  );
 
   return {
     props: {
