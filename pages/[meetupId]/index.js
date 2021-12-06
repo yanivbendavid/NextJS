@@ -27,7 +27,7 @@ export async function getStaticPaths() {
   client.close();
 
   return {
-    fallback: false, //false=all paths are described. true- server will try to generate the rest dynamically
+    fallback: "blocking", //false=all paths are described. true- server will try to generate the rest dynamically
     paths: ids.map((id) => ({
       params: {
         meetupId: id._id.toString(),
