@@ -21,14 +21,42 @@ const meetupsList = [
 ];
 
 export default function DetailsPage(props) {
-  const router = useRouter();
-  const {
-    query: { meetupId },
-  } = router;
+  // const router = useRouter();
+  // const {
+  //   query: { meetupId },
+  // } = router;
 
-  const meetupDetail = meetupId
-    ? meetupsList.find((m) => m.id === parseInt(router.query.meetupId))
-    : {};
+  // const meetupDetail = meetupId
+  //   ? meetupsList.find((m) => m.id === parseInt(router.query.meetupId))
+  //   : {};
 
-  return <MeetupDetail meetup={meetupDetail} />;
+  return <MeetupDetail meetup={props.meetupDetail} />;
+}
+
+export async function getStaticPaths() {
+  return {
+    fallback: false, //false=all paths are described. true- server will try to generate the rest dynamically
+    paths: [
+      {
+        params: {
+          meetupId: "1",
+        },
+      },
+      {
+        params: {
+          meetupId: "2",
+        },
+      },
+    ],
+  };
+}
+
+export async function getStaticProps(context) {
+  return {
+    props: {
+      meetupDetail: meetupsList.find(
+        (m) => m.id === parseInt(context.params.meetupId)
+      ),
+    },
+  };
 }
